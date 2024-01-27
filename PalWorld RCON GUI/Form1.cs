@@ -104,12 +104,14 @@ namespace PalWorldR
 
         private async void ShutdownAsync(object sender, EventArgs e)
         {
-            /*var s = "";
+            var s = "";
+            var n = Regex.Replace(textBox20.Text, @"\s", "");
+            Console.WriteLine(n);
             await Task.Run(() =>
-                s = Program.Shutdown(textBox16.Text, textBox14.Text).Result.ToString()
+                s = Rcon.ShutDown(textBox16.Text, textBox14.Text).Result.ToString()
             );
             textBox8.Text += s;
-            textBox8.Text += Environment.NewLine;*/
+            textBox8.Text += Environment.NewLine;
         }
 
         private void timer1_Tick(object sender, EventArgs e)
