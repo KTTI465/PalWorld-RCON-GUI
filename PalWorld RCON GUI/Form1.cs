@@ -86,12 +86,6 @@ namespace PalWorldR
         {
             timer1.Interval = int.Parse(textBox18.Text) * 1000;
             label12.Text = $"更新日時:{DateTime.Now:yyyy/MM/dd HH:mm:ss}";
-            var s = "";
-            await Task.Run(() =>
-                s = Rcon.GetPlayers().Result.ToString()
-            );
-            textBox12.Text = s;
-
             if (cflg)
             {
                 flg = !flg;
@@ -122,11 +116,25 @@ namespace PalWorldR
         {
             Task.Run(() =>
             {
-                textBox12.Text = Rcon.GetPlayers().Result.ToString();
-                Invoke(new Action(() => {
-                    label12.Text = $"更新日時:{DateTime.Now:yyyy/MM/dd HH:mm:ss}";
-                }));
+                string players = Rcon.GetPlayers().Result.ToString();
+                UpdatePlayers(players);
             });
+        }
+
+        /// <summary>スレッドセーフにテキストを追加</summary>
+        /// <remarks>同時に日時も更新</remarks>
+        /// <param name="text">追加するテキスト</param>
+        private void UpdatePlayers(string text)
+        {
+            if (textBox12.InvokeRequired)
+            {
+                textBox12.Invoke((MethodInvoker)delegate { UpdatePlayers(text); });
+            }
+            else
+            {
+                label12.Text = $"更新日時:{DateTime.Now:yyyy/MM/dd HH:mm:ss}";
+                textBox12.Text = text;
+            }
         }
 
         private void textBox18_TextChanged(object sender, EventArgs e)
