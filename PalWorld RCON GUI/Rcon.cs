@@ -78,19 +78,27 @@ namespace PalWorldR
 
         public static async Task<string> SInfo(bool keep = false)
         {
+
             if (Client != null)
             {
-                while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
-                Pck pck = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("info"));
-                networkStream.Write(pck.ToBytes(), 0, pck.Len);
-
-                int size = networkStream.ReadByte();
-                var data = new byte[size];
-                await networkStream.ReadAsync(data, 0, size);
-
-                if (!keep)
+                try
                 {
-                    return Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                    while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
+                    Pck pck = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("info"));
+                    networkStream.Write(pck.ToBytes(), 0, pck.Len);
+
+                    int size = networkStream.ReadByte();
+                    var data = new byte[size];
+                    await networkStream.ReadAsync(data, 0, size);
+
+                    if (!keep)
+                    {
+                        return Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                    }
+                }
+                catch
+                {
+                    return "取得に失敗しました";
                 }
             }
 
@@ -128,7 +136,7 @@ namespace PalWorldR
                     }
                     return "";
                 }
-                catch (NullReferenceException)
+                catch (Exception)
                 {
                     return "取得に失敗しました";
                 }
@@ -159,7 +167,7 @@ namespace PalWorldR
                     }
                     return "";
                 }
-                catch (NullReferenceException)
+                catch (Exception)
                 {
                     return "失敗しました";
                 }
@@ -198,7 +206,7 @@ namespace PalWorldR
                     }
                     return "";
                 }
-                catch (NullReferenceException)
+                catch (Exception)
                 {
                     return "失敗しました";
                 }
