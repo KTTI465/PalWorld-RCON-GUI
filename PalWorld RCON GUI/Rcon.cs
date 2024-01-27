@@ -175,10 +175,36 @@ namespace PalWorldR
             }
         }
 
-        /*public static async Task<string> ShutDown(string time, string text)
+        public static async Task<string> ShutDown(string time, string text)
         {
+            if (Client != null)
+            {
+                try
+                {
+                    if (networkStream != null)
+                    {
+                        while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
+                        Pck packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("shutdown " + time + " " + text));
+                        networkStream.Write(packet.ToBytes(), 0, packet.Len);
 
-        }*/
+                        int size = networkStream.ReadByte();
+                        byte[] data = new byte[size];
+
+                        await networkStream.ReadAsync(data, 0, size);
+
+                        string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+
+                        return resstring;
+                    }
+                    return "";
+                }
+                catch (NullReferenceException)
+                {
+                    return "失敗しました";
+                }
+            }
+            return "失敗しました";
+        }
 
         [Serializable]
         public class Pck
