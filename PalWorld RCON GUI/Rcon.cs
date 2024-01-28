@@ -132,7 +132,7 @@ namespace PalWorldR
                             output += $"{i}:" + players[i - 1] + Environment.NewLine;
                         }
 
-                        return resstring;
+                        return output;
                     }
                     return "";
                 }
