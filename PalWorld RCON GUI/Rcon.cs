@@ -35,7 +35,7 @@ namespace PalWorldR
             {
                 await Client.ConnectAsync(address, int.Parse(port));
             }
-            catch
+            catch(Exception)
             {
                 return "接続に失敗しました";
             }
@@ -51,7 +51,7 @@ namespace PalWorldR
 
             Pck auth = new Pck(0xf5, PacketType.AUTH, Encoding.ASCII.GetBytes(pass));
 
-            networkStream.Write(auth.ToBytes(), 0, auth.Len);
+            networkStream.Write(auth.ToBytes(), 0, auth.Length);
 
             int size = networkStream.ReadByte();
             byte[] data = new byte[size];
@@ -85,7 +85,7 @@ namespace PalWorldR
                 {
                     while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
                     Pck pck = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("info"));
-                    networkStream.Write(pck.ToBytes(), 0, pck.Len);
+                    networkStream.Write(pck.ToBytes(), 0, pck.Length);
 
                     int size = networkStream.ReadByte();
                     var data = new byte[size];
@@ -115,7 +115,7 @@ namespace PalWorldR
                     {
                         while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
                         Pck pck = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("showplayers"));
-                        networkStream.Write(pck.ToBytes(), 0, pck.Len);
+                        networkStream.Write(pck.ToBytes(), 0, pck.Length);
 
                         int size = networkStream.ReadByte();
                         byte[] data = new byte[size];
@@ -154,7 +154,7 @@ namespace PalWorldR
                     {
                         while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
                         Pck packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.UTF8.GetBytes("broadcast " + text));
-                        networkStream.Write(packet.ToBytes(), 0, packet.Len);
+                        networkStream.Write(packet.ToBytes(), 0, packet.Length);
 
                         int size = networkStream.ReadByte();
                         byte[] data = new byte[size];
@@ -183,7 +183,7 @@ namespace PalWorldR
             }
         }
 
-        public static async Task<string> ShutDown(string time, string text)
+        public static async Task<string> ShutDown(string time, string text, bool flg = false)
         {
             if (Client != null)
             {
@@ -192,8 +192,88 @@ namespace PalWorldR
                     if (networkStream != null)
                     {
                         while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
-                        Pck packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("shutdown " + time + " " + text));
-                        networkStream.Write(packet.ToBytes(), 0, packet.Len);
+                        Pck packet;
+                        if (flg)
+                        {
+                            packet = new Pck(0x2f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("doexit"));
+                            networkStream.Write(packet.ToBytes(), 0, packet.Length);
+                        }
+                        else
+                        {
+                            packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("shutdown " + time + " " + text));
+                            networkStream.Write(packet.ToBytes(), 0, packet.Length);
+                        }
+
+                        int size = networkStream.ReadByte();
+                        byte[] data = new byte[size];
+
+                        await networkStream.ReadAsync(data, 0, size);
+
+                        string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+
+                        return resstring;
+                    }
+                    return "";
+                }
+                catch (Exception)
+                {
+                    return "失敗しました";
+                }
+            }
+            return "失敗しました";
+        }
+
+        public static async Task<string> Banishment(string text, bool flg = false)
+        {
+            if (Client != null)
+            {
+                try
+                {
+                    if (networkStream != null)
+                    {
+                        while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
+                        Pck packet;
+                        if (flg)
+                        {
+                            packet = new Pck(0x2f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("banplayer " + text));
+                            networkStream.Write(packet.ToBytes(), 0, packet.Length);
+                        }
+                        else
+                        {
+                            packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("kickplayer " + text));
+                            networkStream.Write(packet.ToBytes(), 0, packet.Length);
+                        }
+
+                        int size = networkStream.ReadByte();
+                        byte[] data = new byte[size];
+
+                        await networkStream.ReadAsync(data, 0, size);
+
+                        string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+
+                        return resstring;
+                    }
+                    return "";
+                }
+                catch (Exception)
+                {
+                    return "失敗しました";
+                }
+            }
+            return "失敗しました";
+        }
+
+        public static async Task<string> CustomCommand(string text)
+        {
+            if (Client != null)
+            {
+                try
+                {
+                    if (networkStream != null)
+                    {
+                        while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
+                        Pck packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.UTF8.GetBytes(text));
+                        networkStream.Write(packet.ToBytes(), 0, packet.Length);
 
                         int size = networkStream.ReadByte();
                         byte[] data = new byte[size];
@@ -237,7 +317,7 @@ namespace PalWorldR
                 return res;
             }
 
-            internal int Len => Body.Length + 12;
+            internal int Length => Body.Length + 12;
         }
 
         public enum PacketType : int
