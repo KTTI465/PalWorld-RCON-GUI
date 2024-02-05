@@ -32,22 +32,22 @@ namespace PalWorldR
 
         public void SetLog(string text)
         {
-            textBox8.Text += text + Environment.NewLine;
+            LogBox.Text += text + Environment.NewLine;
         }
         public void SetPlayers(string text)
         {
-            textBox12.Text = text;
+            PlayerBox.Text = text;
         }
 
         private async void StartConnect(object sender, EventArgs e)
         {
             var s = "";
             await Task.Run(() =>
-            s = Rcon.Connect(textBox3.Text, textBox4.Text, textBox6.Text).Result.ToString()
+            s = Rcon.Connect(IPAddress.Text, PortNum.Text, AdPass.Text).Result.ToString()
             );
 
-            textBox8.Text += s;
-            textBox8.Text += Environment.NewLine;
+            LogBox.Text += s;
+            LogBox.Text += Environment.NewLine;
 
             if (s[3] == '成')
             {
@@ -59,13 +59,13 @@ namespace PalWorldR
         private void StopConnect(object sender, EventArgs e)
         {
             Rcon.ProcessExit(sender, e);
-            textBox8.Text += "切断しました" + Environment.NewLine;
+            LogBox.Text += "切断しました" + Environment.NewLine;
             cflg = false;
             timer2.Stop();
 
             if (flg)
             {
-                button3.Text = "取得開始";
+                GetPlayerButton.Text = "取得開始";
                 timer1.Stop();
             }
         }
@@ -73,30 +73,30 @@ namespace PalWorldR
         private async void SendMessage(object sender, EventArgs e)
         {
             var s = "";
-            var n = Regex.Replace(textBox20.Text, @"\s", "");
+            var n = Regex.Replace(BroadCastM.Text, @"\s", "");
             Console.WriteLine(n);
             await Task.Run(() =>
                 s = Rcon.Broadcast(n).Result.ToString()
             );
-            textBox8.Text += s;
-            textBox8.Text += Environment.NewLine;
+            LogBox.Text += s;
+            LogBox.Text += Environment.NewLine;
         }
 
         private async void CollectPlayer(object sender, EventArgs e)
         {
-            timer1.Interval = int.Parse(textBox18.Text) * 1000;
+            timer1.Interval = int.Parse(GetPlayerSec.Text) * 1000;
             label12.Text = $"更新日時:{DateTime.Now:yyyy/MM/dd HH:mm:ss}";
             if (cflg)
             {
                 flg = !flg;
                 if (flg)
                 {
-                    button3.Text = "取得停止";
+                    GetPlayerButton.Text = "取得停止";
                     timer1.Start();
                 }
                 else
                 {
-                    button3.Text = "取得開始";
+                    GetPlayerButton.Text = "取得開始";
                     timer1.Stop();
                 }
             }
@@ -105,13 +105,16 @@ namespace PalWorldR
         private async void ShutdownAsync(object sender, EventArgs e)
         {
             var s = "";
-            var n = Regex.Replace(textBox20.Text, @"\s", "");
-            Console.WriteLine(n);
+            var n = Regex.Replace(BroadCastM.Text, @"\s", "");
+
+            DialogResult result = MessageBox.Show($"サーバーを{ShutDownSec.Text}秒後にシャットダウンしますか？", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button2);
+            if (result == DialogResult.No) return;
+
             await Task.Run(() =>
-                s = Rcon.ShutDown(textBox16.Text, textBox14.Text).Result.ToString()
+                s = Rcon.ShutDown(ShutDownSec.Text, ShutDowmM.Text).Result.ToString()
             );
-            textBox8.Text += s;
-            textBox8.Text += Environment.NewLine;
+            LogBox.Text += s;
+            LogBox.Text += Environment.NewLine;
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -128,25 +131,100 @@ namespace PalWorldR
         /// <param name="text">追加するテキスト</param>
         private void UpdatePlayers(string text)
         {
-            if (textBox12.InvokeRequired)
+            if (PlayerBox.InvokeRequired)
             {
-                textBox12.Invoke((MethodInvoker)delegate { UpdatePlayers(text); });
+                PlayerBox.Invoke((MethodInvoker)delegate { UpdatePlayers(text); });
             }
             else
             {
                 label12.Text = $"更新日時:{DateTime.Now:yyyy/MM/dd HH:mm:ss}";
-                textBox12.Text = text;
+                PlayerBox.Text = text;
             }
         }
 
-        private void textBox18_TextChanged(object sender, EventArgs e)
+        private async void DoExit(object sender, EventArgs e)
         {
-            timer1.Interval = int.Parse(textBox18.Text) * 1000;
+            var s = "";
+
+            DialogResult result = MessageBox.Show($"サーバーを強制停止しますか？", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button2);
+            if (result == DialogResult.No) return;
+
+            Console.WriteLine("終了");
+            await Task.Run(() =>
+                s = Rcon.ShutDown(ShutDownSec.Text, ShutDowmM.Text, true).Result.ToString()
+            );
+            LogBox.Text += s;
+            LogBox.Text += Environment.NewLine;
+        }
+
+        private async void Kick(object sender, EventArgs e)
+        {
+            var s = "";
+
+            DialogResult result = MessageBox.Show($"ID:{KBID.Text}を本当にキックしますか？", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button2);
+            if (result == DialogResult.No) return;
+
+            Console.WriteLine("終了");
+            await Task.Run(() =>
+                s = Rcon.Banishment(KBID.Text).Result.ToString()
+            );
+            LogBox.Text += s;
+            LogBox.Text += Environment.NewLine;
+        }
+
+        private async void Ban(object sender, EventArgs e)
+        {
+            var s = "";
+
+            DialogResult result = MessageBox.Show($"ID:{KBID.Text}を本当にBANしますか？", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button2);
+            if (result == DialogResult.No) return;
+
+            Console.WriteLine("終了");
+            await Task.Run(() =>
+                s = Rcon.Banishment(KBID.Text, true).Result.ToString()
+            );
+            LogBox.Text += s;
+            LogBox.Text += Environment.NewLine;
+        }
+
+        private void GetPSec_TextChanged(object sender, EventArgs e)
+        {
+            if (GetPlayerSec.Text != "")
+            {
+                try
+                {
+                    if (int.Parse(GetPlayerSec.Text) < 1) GetPlayerSec.Text = "1";
+                    timer1.Interval = int.Parse(GetPlayerSec.Text) * 1000;
+                }
+                catch
+                {
+                    GetPlayerSec.Text = "1";
+                    timer1.Interval = 1000;
+                }
+            }
         }
 
         private async void timer2_Tick(object sender, EventArgs e)
         {
             await Rcon.Reload();
+        }
+
+        private async void textBox2_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                var s = "";
+                await Task.Run(() =>
+                    s = Rcon.CustomCommand(cli.Text).Result.ToString()
+                );
+                LogBox.Text += s;
+                LogBox.Text += Environment.NewLine;
+            }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            
         }
     }
 }
