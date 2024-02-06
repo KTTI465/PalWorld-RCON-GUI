@@ -1,4 +1,4 @@
-# PalWorld-RCON-GUI
+# PalWorld-RCON-GUI(v1.0.3時点の情報)
 ![png](https://github.com/KTTI465/PalWorld-RCON-GUI/blob/main/image/window.png)
 
 ## 概要
