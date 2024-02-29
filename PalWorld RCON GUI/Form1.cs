@@ -82,7 +82,7 @@ namespace PalWorldR
             LogBox.Text += Environment.NewLine;
         }
 
-        private async void CollectPlayer(object sender, EventArgs e)
+        private void CollectPlayer(object sender, EventArgs e)
         {
             timer1.Interval = int.Parse(GetPlayerSec.Text) * 1000;
             label12.Text = $"更新日時:{DateTime.Now:yyyy/MM/dd HH:mm:ss}";
