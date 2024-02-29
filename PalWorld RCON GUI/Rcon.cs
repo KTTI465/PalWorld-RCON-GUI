@@ -40,8 +40,7 @@ namespace PalWorldR
 
             if (!client.Connected)
             {
-                client.Dispose();
-                client = null;
+                DisposeClient();
                 return "接続に失敗しました";
             }
 
@@ -63,14 +62,7 @@ namespace PalWorldR
                 return string.Format("接続に成功しました" + Environment.NewLine + $"{output}");
             }
 
-            if (client != null)
-            {
-                if (client.Connected)
-                {
-                    client.GetStream().Close();
-                }
-                client.Dispose();
-            }
+            DisposeClient();
             return "認証に失敗しました";
         }
 
@@ -305,8 +297,13 @@ namespace PalWorldR
 
         public static void ProcessExit(object sender, EventArgs ea)
         {
-            if (client == null) { return; }
+            DisposeClient();
+        }
 
+        /// <summary>Clientを破棄</summary>
+        private static void DisposeClient()
+        {
+            if (client == null) { return; }
             if (client.Connected) { client.GetStream().Close(); }
 
             client.Dispose();
