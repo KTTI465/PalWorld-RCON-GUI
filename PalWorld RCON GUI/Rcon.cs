@@ -56,22 +56,22 @@ namespace PalWorldR
 
             await networkStream.ReadAsync(data, 0, size);
 
-            if (data[3] != 0xf5)
+            bool isSuccessConnect = data[3] == 0xf5;
+            if (isSuccessConnect)
             {
-                if (client != null)
-                {
-                    if (client.Connected)
-                    {
-                        client.GetStream().Close();
-                    }
-                    client.Dispose();
-                }
-                return "認証に失敗しました";
+                var output = await SInfo();
+                return string.Format("接続に成功しました" + Environment.NewLine + $"{output}");
             }
 
-            var output = await SInfo();
-
-            return string.Format("接続に成功しました" + Environment.NewLine + $"{output}");
+            if (client != null)
+            {
+                if (client.Connected)
+                {
+                    client.GetStream().Close();
+                }
+                client.Dispose();
+            }
+            return "認証に失敗しました";
         }
 
         public static async Task<string> SInfo(bool keep = false)
