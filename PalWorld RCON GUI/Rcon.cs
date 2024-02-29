@@ -195,10 +195,11 @@ namespace PalWorldR
         [Serializable]
         public class Pck
         {
-            public int Size;
-            public int ID;
-            public PacketType Type;
-            public byte[] Body;
+            public int Size { get; private set; }
+            public int ID { get; private set; }
+            public PacketType Type { get; private set; }
+            public byte[] Body { get; private set; }
+            internal int Length => Body.Length + 12;
 
             public Pck(int id, PacketType type, byte[] body)
             {
@@ -217,8 +218,6 @@ namespace PalWorldR
                 Body.CopyTo(res, 12);
                 return res;
             }
-
-            internal int Length => Body.Length + 12;
         }
 
         public enum PacketType : int
