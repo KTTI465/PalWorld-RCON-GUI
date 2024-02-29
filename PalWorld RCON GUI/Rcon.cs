@@ -29,7 +29,11 @@ namespace PalWorldR
             AppDomain.CurrentDomain.ProcessExit += ProcessExit;
         }
 
-        public static async Task<string> Connect(string address, string port, string pass)
+        /// <summary>RCON接続</summary>
+        /// <param name="address">アドレス</param>
+        /// <param name="port">ポート番号</param>
+        /// <param name="password">パスワード</param>
+        public static async Task<string> Connect(string address, string port, string password)
         {
             client = new TcpClient();
 
@@ -48,19 +52,8 @@ namespace PalWorldR
                 return "接続に失敗しました";
             }
 
-            networkStream = client.GetStream();
-
-            Pck auth = new Pck(0xf5, PacketType.AUTH, Encoding.ASCII.GetBytes(pass));
-
-            networkStream.Write(auth.ToBytes(), 0, auth.Length);
-
-            int size = networkStream.ReadByte();
-            byte[] data = new byte[size];
-
-            await networkStream.ReadAsync(data, 0, size);
-
-            bool isSuccessConnect = data[3] == 0xf5;
-            if (isSuccessConnect)
+            bool isAuth = await Auth(password);
+            if (isAuth)
             {
                 var output = await GetServerInfo();
                 var message = $"接続に成功しました\r\n{output}";
@@ -144,6 +137,32 @@ namespace PalWorldR
         {
             string message = await ExecuteCommand(text);
             return message;
+        }
+
+        /// <summary>認証</summary>
+        /// <param name="password">RCONパスワード</param>
+        /// <returns>認証が成功したか</returns>
+        private static async Task<bool> Auth(string password)
+        {
+            try
+            {
+                networkStream = client.GetStream();
+
+                Pck auth = new Pck(0xf5, PacketType.AUTH, Encoding.ASCII.GetBytes(password));
+                networkStream.Write(auth.ToBytes(), 0, auth.Length);
+
+                int size = networkStream.ReadByte();
+                byte[] data = new byte[size];
+
+                await networkStream.ReadAsync(data, 0, size);
+
+                bool isAuth = data[3] == 0xf5;
+                return isAuth;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>RCONコマンドを実行</summary>
