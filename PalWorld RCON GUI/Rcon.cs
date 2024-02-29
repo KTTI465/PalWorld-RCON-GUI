@@ -78,220 +78,194 @@ namespace PalWorldR
 
         public static async Task<string> SInfo(bool keep = false)
         {
+            if (client == null) { return ""; }
 
-            if (client != null)
+            try
             {
-                try
-                {
-                    while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
-                    Pck pck = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("info"));
-                    networkStream.Write(pck.ToBytes(), 0, pck.Length);
+                while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
+                Pck pck = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("info"));
+                networkStream.Write(pck.ToBytes(), 0, pck.Length);
 
-                    int size = networkStream.ReadByte();
-                    var data = new byte[size];
-                    await networkStream.ReadAsync(data, 0, size);
+                int size = networkStream.ReadByte();
+                var data = new byte[size];
+                await networkStream.ReadAsync(data, 0, size);
 
-                    if (!keep)
-                    {
-                        return Encoding.UTF8.GetString(data.Skip(11).ToArray());
-                    }
-                }
-                catch
-                {
-                    return "取得に失敗しました";
-                }
+                if (keep) { return ""; }
+                return Encoding.UTF8.GetString(data.Skip(11).ToArray());
             }
-
-            return "";
+            catch
+            {
+                return "取得に失敗しました";
+            }
         }
 
         public static async Task<string> GetPlayers()
         {
-            if (client != null)
+            const string FAILED_MESSAGE = "取得に失敗しました";
+            if (client == null) { return FAILED_MESSAGE; }
+            if (networkStream == null) { return ""; }
+
+            try
             {
-                try
+                while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
+                Pck pck = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("showplayers"));
+                networkStream.Write(pck.ToBytes(), 0, pck.Length);
+
+                int size = networkStream.ReadByte();
+                byte[] data = new byte[size];
+
+                await networkStream.ReadAsync(data, 0, size);
+
+                string resstring = Encoding.UTF8.GetString(data.Skip(34).ToArray());
+                string[] players = resstring.Split('\n');
+
+                string output = "";
+
+                for (int i = 1; i <= players.Length; i++)
                 {
-                    if (networkStream != null)
-                    {
-                        while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
-                        Pck pck = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("showplayers"));
-                        networkStream.Write(pck.ToBytes(), 0, pck.Length);
-
-                        int size = networkStream.ReadByte();
-                        byte[] data = new byte[size];
-
-                        await networkStream.ReadAsync(data, 0, size);
-
-                        string resstring = Encoding.UTF8.GetString(data.Skip(34).ToArray());
-                        string[] players = resstring.Split('\n');
-
-                        string output = "";
-
-                        for (int i = 1; i <= players.Length; i++)
-                        {
-                            output += $"{i}:" + players[i - 1] + Environment.NewLine;
-                        }
-
-                        return output;
-                    }
-                    return "";
+                    output += $"{i}:" + players[i - 1] + Environment.NewLine;
                 }
-                catch (Exception)
-                {
-                    return "取得に失敗しました";
-                }
+
+                return output;
             }
-            return "取得に失敗しました";
+            catch (Exception)
+            {
+                return FAILED_MESSAGE;
+            }
         }
 
         public static async Task<string> Broadcast(string text)
         {
-            if (client != null)
+            const string FAILED_MESSAGE = "失敗しました";
+            if (client == null) { return FAILED_MESSAGE; }
+            if (networkStream == null) { return ""; }
+
+            try
             {
-                try
-                {
-                    if (networkStream != null)
-                    {
-                        while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
-                        Pck packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.UTF8.GetBytes("broadcast " + text));
-                        networkStream.Write(packet.ToBytes(), 0, packet.Length);
+                while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
+                Pck packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.UTF8.GetBytes("broadcast " + text));
+                networkStream.Write(packet.ToBytes(), 0, packet.Length);
 
-                        int size = networkStream.ReadByte();
-                        byte[] data = new byte[size];
+                int size = networkStream.ReadByte();
+                byte[] data = new byte[size];
 
-                        await networkStream.ReadAsync(data, 0, size);
+                await networkStream.ReadAsync(data, 0, size);
 
-                        string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
 
-                        return resstring;
-                    }
-                    return "";
-                }
-                catch (Exception)
-                {
-                    return "失敗しました";
-                }
+                return resstring;
             }
-            return "失敗しました";
+            catch (Exception)
+            {
+                return FAILED_MESSAGE;
+            }
         }
 
         public static async Task Reload()
         {
-            if (client.Connected)
-            {
-                await SInfo(true);
-            }
+            if (client == null || !client.Connected) { return; }
+            
+            await SInfo(true);
         }
 
         public static async Task<string> ShutDown(string time, string text, bool flg = false)
         {
-            if (client != null)
+            const string FAILED_MESSAGE = "失敗しました";
+            if (client == null) { return FAILED_MESSAGE; }
+            if (networkStream == null) { return ""; }
+
+            try
             {
-                try
+                while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
+                Pck packet;
+                if (flg)
                 {
-                    if (networkStream != null)
-                    {
-                        while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
-                        Pck packet;
-                        if (flg)
-                        {
-                            packet = new Pck(0x2f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("doexit"));
-                            networkStream.Write(packet.ToBytes(), 0, packet.Length);
-                        }
-                        else
-                        {
-                            packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("shutdown " + time + " " + text));
-                            networkStream.Write(packet.ToBytes(), 0, packet.Length);
-                        }
-
-                        int size = networkStream.ReadByte();
-                        byte[] data = new byte[size];
-
-                        await networkStream.ReadAsync(data, 0, size);
-
-                        string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
-
-                        return resstring;
-                    }
-                    return "";
+                    packet = new Pck(0x2f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("doexit"));
+                    networkStream.Write(packet.ToBytes(), 0, packet.Length);
                 }
-                catch (Exception)
+                else
                 {
-                    return "失敗しました";
+                    packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("shutdown " + time + " " + text));
+                    networkStream.Write(packet.ToBytes(), 0, packet.Length);
                 }
+
+                int size = networkStream.ReadByte();
+                byte[] data = new byte[size];
+
+                await networkStream.ReadAsync(data, 0, size);
+
+                string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+
+                return resstring;
             }
-            return "失敗しました";
+            catch (Exception)
+            {
+                return FAILED_MESSAGE;
+            }
         }
 
         public static async Task<string> Banishment(string text, bool flg = false)
         {
-            if (client != null)
+            const string FAILED_MESSAGE = "失敗しました";
+            if (client == null) { return FAILED_MESSAGE; }
+            if (networkStream == null ) { return ""; }
+
+            try
             {
-                try
+                while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
+                Pck packet;
+                if (flg)
                 {
-                    if (networkStream != null)
-                    {
-                        while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
-                        Pck packet;
-                        if (flg)
-                        {
-                            packet = new Pck(0x2f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("banplayer " + text));
-                            networkStream.Write(packet.ToBytes(), 0, packet.Length);
-                        }
-                        else
-                        {
-                            packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("kickplayer " + text));
-                            networkStream.Write(packet.ToBytes(), 0, packet.Length);
-                        }
-
-                        int size = networkStream.ReadByte();
-                        byte[] data = new byte[size];
-
-                        await networkStream.ReadAsync(data, 0, size);
-
-                        string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
-
-                        return resstring;
-                    }
-                    return "";
+                    packet = new Pck(0x2f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("banplayer " + text));
+                    networkStream.Write(packet.ToBytes(), 0, packet.Length);
                 }
-                catch (Exception)
+                else
                 {
-                    return "失敗しました";
+                    packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.ASCII.GetBytes("kickplayer " + text));
+                    networkStream.Write(packet.ToBytes(), 0, packet.Length);
                 }
+
+                int size = networkStream.ReadByte();
+                byte[] data = new byte[size];
+
+                await networkStream.ReadAsync(data, 0, size);
+
+                string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+
+                return resstring;
             }
-            return "失敗しました";
+            catch (Exception)
+            {
+                return FAILED_MESSAGE;
+            }
         }
 
         public static async Task<string> CustomCommand(string text)
         {
-            if (client != null)
+            const string FAILED_MESSAGE = "失敗しました";
+            if (client == null) { return FAILED_MESSAGE; }
+
+            try
             {
-                try
-                {
-                    if (networkStream != null)
-                    {
-                        while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
-                        Pck packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.UTF8.GetBytes(text));
-                        networkStream.Write(packet.ToBytes(), 0, packet.Length);
+                if (networkStream == null) { return ""; }
 
-                        int size = networkStream.ReadByte();
-                        byte[] data = new byte[size];
+                while (networkStream.DataAvailable) { _ = networkStream.ReadByte(); }
+                Pck packet = new Pck(0x1f, PacketType.EXECCOMMAND, Encoding.UTF8.GetBytes(text));
+                networkStream.Write(packet.ToBytes(), 0, packet.Length);
 
-                        await networkStream.ReadAsync(data, 0, size);
+                int size = networkStream.ReadByte();
+                byte[] data = new byte[size];
 
-                        string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                await networkStream.ReadAsync(data, 0, size);
 
-                        return resstring;
-                    }
-                    return "";
-                }
-                catch (Exception)
-                {
-                    return "失敗しました";
-                }
+                string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+
+                return resstring;
             }
-            return "失敗しました";
+            catch (Exception)
+            {
+                return FAILED_MESSAGE;
+            }
         }
 
         [Serializable]
@@ -330,15 +304,12 @@ namespace PalWorldR
 
         public static void ProcessExit(object sender, EventArgs ea)
         {
-            if (client != null)
-            {
-                if (client.Connected)
-                {
-                    client.GetStream().Close();
-                }
-                client.Dispose();
-                client = null;
-            }
+            if (client == null) { return; }
+
+            if (client.Connected) { client.GetStream().Close(); }
+
+            client.Dispose();
+            client = null;
         }
     }
 }
