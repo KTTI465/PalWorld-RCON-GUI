@@ -12,6 +12,10 @@ namespace PalWorldR
         private static TcpClient client;
         private static NetworkStream networkStream;
 
+        /// <summary>RCONパケットヘッダ</summary>
+        /// <remarks>0.1.5.1バージョンですべて00で埋まっている</remarks>
+        private const int PACKET_HEADER = 11;
+
         static Form form;
 
         [STAThread]
@@ -82,7 +86,7 @@ namespace PalWorldR
                 await networkStream.ReadAsync(data, 0, size);
 
                 if (keep) { return ""; }
-                string responseMessage = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                string responseMessage = Encoding.UTF8.GetString(data.Skip(PACKET_HEADER).ToArray());
                 return responseMessage;
             }
             catch
@@ -108,14 +112,15 @@ namespace PalWorldR
 
                 await networkStream.ReadAsync(data, 0, size);
 
-                string responseMessage = Encoding.UTF8.GetString(data.Skip(34).ToArray());
-                string[] players = responseMessage.Split('\n');
+                string responseMessage = Encoding.UTF8.GetString(data.Skip(PACKET_HEADER).ToArray());
+                var players = responseMessage.Split('\n');
 
                 var sb = new StringBuilder();
-                for (int i = 0; i < players.Length; i++)
+                int skipedHeader = 1;
+                for (int i = skipedHeader; i < players.Count(); i++)
                 {
                     string player = players[i];
-                    sb.AppendLine($"{i+1}:{player}");
+                    sb.AppendLine($"{i}:{player}");
                 }
 
                 string message = sb.ToString();
@@ -144,7 +149,7 @@ namespace PalWorldR
 
                 await networkStream.ReadAsync(data, 0, size);
 
-                string responseMessage = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                string responseMessage = Encoding.UTF8.GetString(data.Skip(PACKET_HEADER).ToArray());
                 return responseMessage;
             }
             catch (Exception)
@@ -186,7 +191,7 @@ namespace PalWorldR
 
                 await networkStream.ReadAsync(data, 0, size);
 
-                string responseMessage = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                string responseMessage = Encoding.UTF8.GetString(data.Skip(PACKET_HEADER).ToArray());
                 return responseMessage;
             }
             catch (Exception)
@@ -221,7 +226,7 @@ namespace PalWorldR
 
                 await networkStream.ReadAsync(data, 0, size);
 
-                string responseMessage = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                string responseMessage = Encoding.UTF8.GetString(data.Skip(PACKET_HEADER).ToArray());
                 return responseMessage;
             }
             catch (Exception)
@@ -248,7 +253,7 @@ namespace PalWorldR
 
                 await networkStream.ReadAsync(data, 0, size);
 
-                string responseMessage = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                string responseMessage = Encoding.UTF8.GetString(data.Skip(PACKET_HEADER).ToArray());
                 return responseMessage;
             }
             catch (Exception)
