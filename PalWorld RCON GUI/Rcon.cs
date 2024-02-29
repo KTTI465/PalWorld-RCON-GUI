@@ -17,7 +17,7 @@ namespace PalWorldR
         static Form form;
 
         [STAThread]
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
