@@ -59,7 +59,8 @@ namespace PalWorldR
             if (isSuccessConnect)
             {
                 var output = await SInfo();
-                return string.Format("接続に成功しました" + Environment.NewLine + $"{output}");
+                var message = $"接続に成功しました\r\n{output}";
+                return message;
             }
 
             DisposeClient();
@@ -81,7 +82,8 @@ namespace PalWorldR
                 await networkStream.ReadAsync(data, 0, size);
 
                 if (keep) { return ""; }
-                return Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                string responseMessage = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                return responseMessage;
             }
             catch
             {
@@ -106,17 +108,18 @@ namespace PalWorldR
 
                 await networkStream.ReadAsync(data, 0, size);
 
-                string resstring = Encoding.UTF8.GetString(data.Skip(34).ToArray());
-                string[] players = resstring.Split('\n');
+                string responseMessage = Encoding.UTF8.GetString(data.Skip(34).ToArray());
+                string[] players = responseMessage.Split('\n');
 
-                string output = "";
-
-                for (int i = 1; i <= players.Length; i++)
+                var sb = new StringBuilder();
+                for (int i = 0; i < players.Length; i++)
                 {
-                    output += $"{i}:" + players[i - 1] + Environment.NewLine;
+                    string player = players[i];
+                    sb.AppendLine($"{i+1}:{player}");
                 }
 
-                return output;
+                string message = sb.ToString();
+                return message;
             }
             catch (Exception)
             {
@@ -141,9 +144,8 @@ namespace PalWorldR
 
                 await networkStream.ReadAsync(data, 0, size);
 
-                string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
-
-                return resstring;
+                string responseMessage = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                return responseMessage;
             }
             catch (Exception)
             {
@@ -184,9 +186,8 @@ namespace PalWorldR
 
                 await networkStream.ReadAsync(data, 0, size);
 
-                string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
-
-                return resstring;
+                string responseMessage = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                return responseMessage;
             }
             catch (Exception)
             {
@@ -220,9 +221,8 @@ namespace PalWorldR
 
                 await networkStream.ReadAsync(data, 0, size);
 
-                string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
-
-                return resstring;
+                string responseMessage = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                return responseMessage;
             }
             catch (Exception)
             {
@@ -248,9 +248,8 @@ namespace PalWorldR
 
                 await networkStream.ReadAsync(data, 0, size);
 
-                string resstring = Encoding.UTF8.GetString(data.Skip(11).ToArray());
-
-                return resstring;
+                string responseMessage = Encoding.UTF8.GetString(data.Skip(11).ToArray());
+                return responseMessage;
             }
             catch (Exception)
             {
