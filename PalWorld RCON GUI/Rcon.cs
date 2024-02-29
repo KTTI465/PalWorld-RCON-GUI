@@ -276,7 +276,10 @@ namespace PalWorldR
 
             public Pck(int id, PacketType type, byte[] body)
             {
-                ID = id; Type = type; Body = body.Concat(new byte[] { 0x00, 0x00 }).ToArray(); Size = body.Length + 10;
+                ID = id;
+                Type = type;
+                Body = body.Concat(new byte[] { 0x00, 0x00 }).ToArray();
+                Size = body.Length + 10;
             }
 
             internal byte[] ToBytes()
