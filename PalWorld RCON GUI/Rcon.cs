@@ -11,7 +11,7 @@ namespace PalWorldR
 {
     internal class Rcon
     {
-        internal static TcpClient Client;
+        private static TcpClient client;
         private static NetworkStream networkStream;
 
         static Form form;
@@ -29,25 +29,25 @@ namespace PalWorldR
 
         public static async Task<string> Connect(string address, string port, string pass)
         {
-            Client = new TcpClient();
+            client = new TcpClient();
 
             try
             {
-                await Client.ConnectAsync(address, int.Parse(port));
+                await client.ConnectAsync(address, int.Parse(port));
             }
             catch(Exception)
             {
                 return "接続に失敗しました";
             }
 
-            if (!Client.Connected)
+            if (!client.Connected)
             {
-                Client.Dispose();
-                Client = null;
+                client.Dispose();
+                client = null;
                 return "接続に失敗しました";
             }
 
-            networkStream = Client.GetStream();
+            networkStream = client.GetStream();
 
             Pck auth = new Pck(0xf5, PacketType.AUTH, Encoding.ASCII.GetBytes(pass));
 
@@ -60,13 +60,13 @@ namespace PalWorldR
 
             if (data[3] != 0xf5)
             {
-                if (Client != null)
+                if (client != null)
                 {
-                    if (Client.Connected)
+                    if (client.Connected)
                     {
-                        Client.GetStream().Close();
+                        client.GetStream().Close();
                     }
-                    Client.Dispose();
+                    client.Dispose();
                 }
                 return "認証に失敗しました";
             }
@@ -79,7 +79,7 @@ namespace PalWorldR
         public static async Task<string> SInfo(bool keep = false)
         {
 
-            if (Client != null)
+            if (client != null)
             {
                 try
                 {
@@ -107,7 +107,7 @@ namespace PalWorldR
 
         public static async Task<string> GetPlayers()
         {
-            if (Client != null)
+            if (client != null)
             {
                 try
                 {
@@ -146,7 +146,7 @@ namespace PalWorldR
 
         public static async Task<string> Broadcast(string text)
         {
-            if (Client != null)
+            if (client != null)
             {
                 try
                 {
@@ -177,7 +177,7 @@ namespace PalWorldR
 
         public static async Task Reload()
         {
-            if (Client.Connected)
+            if (client.Connected)
             {
                 await SInfo(true);
             }
@@ -185,7 +185,7 @@ namespace PalWorldR
 
         public static async Task<string> ShutDown(string time, string text, bool flg = false)
         {
-            if (Client != null)
+            if (client != null)
             {
                 try
                 {
@@ -225,7 +225,7 @@ namespace PalWorldR
 
         public static async Task<string> Banishment(string text, bool flg = false)
         {
-            if (Client != null)
+            if (client != null)
             {
                 try
                 {
@@ -265,7 +265,7 @@ namespace PalWorldR
 
         public static async Task<string> CustomCommand(string text)
         {
-            if (Client != null)
+            if (client != null)
             {
                 try
                 {
@@ -330,14 +330,14 @@ namespace PalWorldR
 
         public static void ProcessExit(object sender, EventArgs ea)
         {
-            if (Client != null)
+            if (client != null)
             {
-                if (Client.Connected)
+                if (client.Connected)
                 {
-                    Client.GetStream().Close();
+                    client.GetStream().Close();
                 }
-                Client.Dispose();
-                Client = null;
+                client.Dispose();
+                client = null;
             }
         }
     }
