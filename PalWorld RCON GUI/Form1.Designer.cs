@@ -107,6 +107,7 @@
             this.AdPass.ImeMode = System.Windows.Forms.ImeMode.Off;
             this.AdPass.Location = new System.Drawing.Point(203, 131);
             this.AdPass.Name = "AdPass";
+            this.AdPass.PasswordChar = '*';
             this.AdPass.Size = new System.Drawing.Size(144, 22);
             this.AdPass.TabIndex = 7;
             // 
@@ -410,12 +411,12 @@
             this.KickButton.UseVisualStyleBackColor = true;
             this.KickButton.Click += new System.EventHandler(this.Kick);
             // 
-            // textBox1
+            // KBID
             // 
             this.KBID.Font = new System.Drawing.Font("MS UI Gothic", 11F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.KBID.ImeMode = System.Windows.Forms.ImeMode.Off;
             this.KBID.Location = new System.Drawing.Point(28, 524);
-            this.KBID.Name = "textBox1";
+            this.KBID.Name = "KBID";
             this.KBID.Size = new System.Drawing.Size(320, 22);
             this.KBID.TabIndex = 45;
             // 
