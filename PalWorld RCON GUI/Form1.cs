@@ -1,4 +1,6 @@
-﻿using System;
+﻿using PalWorld_RCON_GUI;
+using PalWorld_RCON_GUI.Properties;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -9,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static PalWorld_RCON_GUI.AppSetting;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace PalWorldR
@@ -17,6 +20,8 @@ namespace PalWorldR
     {
         bool flg = false;
         bool cflg = false;
+        /// <summary>アプリの設定</summary>
+        AppSetting setting = new AppSetting();
 
         public Form1()
         {
@@ -222,9 +227,34 @@ namespace PalWorldR
             }
         }
 
+        /// <summary>フォーム開始時</summary>
         private void Form1_Load(object sender, EventArgs e)
         {
-            
+            setting.Load();
+            GetSetting();
+        }
+
+        /// <summary>フォーム終了時</summary>
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            SaveSetting();
+        }
+
+        /// <summary>設定をコントロールに反映</summary>
+        private void GetSetting()
+        {
+            IPAddress.Text = setting.ServerAddress;
+            PortNum.Text = setting.RconPort;
+            AdPass.Text = setting.AdminPassword;
+        }
+
+        /// <summary>設定を保存</summary>
+        private void SaveSetting()
+        {
+            setting.UpdateSetting(SettingTypes.ServerAddress, IPAddress.Text);
+            setting.UpdateSetting(SettingTypes.RconPort, PortNum.Text);
+            setting.UpdateSetting(SettingTypes.AdminPassword, AdPass.Text);
+            setting.Save();
         }
     }
 }
