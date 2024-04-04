@@ -1,4 +1,6 @@
 # PalWorld-RCON-GUI(v1.0.3時点の情報)
+## APIが新しく実装されたので、一旦こちらの開発のほうを止めます
+## API用のアプリができたらこちらでもリンクを掲載します
 ![png](https://github.com/KTTI465/PalWorld-RCON-GUI/blob/main/image/window.png)
 
 ## 概要
